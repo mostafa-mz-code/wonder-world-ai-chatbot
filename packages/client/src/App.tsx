@@ -7,13 +7,12 @@ const App = () => {
   useEffect(() => {
     fetch("/api/hello")
       .then((res) => res.json())
-      .then((data) => setMessage(data.message));
+      .then((data) => {
+        console.log(data);
+        setMessage(data.message);
+      });
   }, []);
-  return (
-    <div>
-      <p>{message}</p>
-    </div>
-  );
+  return <p className="font-bold p-4 text-xl">server says: {message}</p>;
 };
 
 export default App;
