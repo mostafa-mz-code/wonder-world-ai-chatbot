@@ -16,7 +16,7 @@ const App = () => {
   return (
     <div className="p-5">
       <p className="font-bold p-4 text-xl">server says: {message}</p>
-      <Button variant="default">Hello World</Button>
+      <Button variant="default">Hello World!</Button>
     </div>
   );
 };
