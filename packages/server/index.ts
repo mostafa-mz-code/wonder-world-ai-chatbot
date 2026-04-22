@@ -15,18 +15,39 @@ app.get("/", (req: Request, res: Response) => {
 app.get("/api/hello", (req: Request, res: Response) => {
   res.json({ message: `Hello World` });
 });
+// Store history in a Map keyed by a unique session ID
+const chatHistories = new Map<string, { role: string; content: string }[]>();
 
 app.post("/api/chat", async (req: Request, res: Response) => {
   try {
-    const { prompt } = req.body;
+    const { prompt, sessionId = "default-user" } = req.body;
 
+    // 1. Get or create history for this user session
+    if (!chatHistories.has(sessionId)) {
+      chatHistories.set(sessionId, [
+        { role: "system", content: "You are a helpful AI assistant." },
+      ]);
+    }
+    const history = chatHistories.get(sessionId)!;
+
+    // 2. Add the NEW user message to the history
+    history.push({ role: "user", content: prompt });
+
+    // 3. Send the FULL history to Ollama
     const response = await ollama.chat({
       model: "llama3.2",
-      messages: [{ role: "user", content: prompt }],
+      messages: history,
       stream: false,
     });
-    return res.json({ message: response.message.content });
+
+    // 4. Add the model's response to the history for next time
+    const assistantMessage = response.message;
+    history.push(assistantMessage);
+
+    // 5. Return only the latest reply to the client
+    return res.json({ message: assistantMessage.content });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: "Failed to fetch AI response" });
   }
 });
