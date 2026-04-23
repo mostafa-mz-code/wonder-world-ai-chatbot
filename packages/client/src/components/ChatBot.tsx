@@ -21,6 +21,14 @@ const ChatBot = () => {
   const userId = useRef(crypto.randomUUID());
   const { register, handleSubmit, reset, formState } = useForm<FormData>();
 
+  const onCopyMessage = (e: ClipboardEvent<HTMLDivElement>) => {
+    const selection = window.getSelection()?.toString().trim();
+    if (selection) {
+      e.preventDefault();
+      e.clipboardData?.setData("text/plain", selection);
+    }
+  };
+
   const onSubmit = async ({ prompt }: FormData) => {
     setMessages((prev) => [...prev, { message: prompt, role: "user" }]);
     setIsBotTyping(true);
@@ -52,6 +60,7 @@ const ChatBot = () => {
         {messages.map(({ message, role }, index) => (
           <div
             key={index}
+            onCopy={onCopyMessage}
             className={`p-4 rounded-3xl max-w-4/5 ${role === "user" ? "bg-[#79dbff] text-white self-end" : "bg-[#f7f7f7] text-black self-start"}`}
           >
             <ReactMarkdown>{message}</ReactMarkdown>
