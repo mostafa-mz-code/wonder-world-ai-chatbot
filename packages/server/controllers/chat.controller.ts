@@ -9,7 +9,7 @@ const chatSchema = z.object({
     .trim()
     .min(1, "Prompt is required")
     .max(1000, "Prompt is too long"),
-  conversationId: z.string().uuid(),
+  userId: z.string().uuid(),
 });
 
 // Public controller
@@ -21,12 +21,9 @@ export const chatController = {
       return res.status(400).json({ error: cleanError });
     }
     try {
-      const { prompt, conversationId = "default-user" } = parseResult.data;
+      const { prompt, userId = "default-user" } = parseResult.data;
 
-      const assistantMessage = await chatService.sendMessage(
-        prompt,
-        conversationId
-      );
+      const assistantMessage = await chatService.sendMessage(prompt, userId);
 
       return res.json({ message: assistantMessage });
     } catch (error) {

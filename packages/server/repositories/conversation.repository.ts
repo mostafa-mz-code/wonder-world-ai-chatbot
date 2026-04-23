@@ -1,26 +1,32 @@
-// Store history in a Map keyed by a unique session ID
-const chatHistories = new Map<string, { role: string; content: string }[]>();
+const chatHistories = new Map<string, ChatMessage[]>();
+type Role = "user" | "assistant";
 
-export const conversationRepository = {
-  getOrCreate,
-  addMessage,
+export type ChatMessage = {
+  role: Role;
+  content: string;
 };
 
-function getOrCreate(sessionId: string) {
-  // 1. Get or create history for this user session
-  if (!chatHistories.has(sessionId)) {
-    chatHistories.set(sessionId, [
-      { role: "system", content: "You are a helpful AI assistant." },
-    ]);
+export const conversationRepository = {
+  getHistory,
+  addMessage,
+  clearHistory,
+};
+
+function getHistory(userId: string): ChatMessage[] {
+  if (!chatHistories.has(userId)) {
+    chatHistories.set(userId, []);
   }
-  const history = chatHistories.get(sessionId)!;
+
+  return chatHistories.get(userId)!;
+}
+
+function addMessage(userId: string, message: ChatMessage) {
+  const history = getHistory(userId);
+  history.push(message);
+
   return history;
 }
 
-function addMessage(
-  history: { role: string; content: string }[],
-  prompt: string
-) {
-  // 2. Add the NEW user message to the history
-  history.push({ role: "user", content: prompt });
+function clearHistory(userId: string) {
+  chatHistories.delete(userId);
 }

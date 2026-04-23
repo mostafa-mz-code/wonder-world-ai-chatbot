@@ -1,24 +1,34 @@
 import { conversationRepository } from "../repositories/conversation.repository";
 import ollama from "ollama";
 
-type Message = {
-  message: string;
-  role: string;
-};
-
 export const chatService = {
-  async sendMessage(prompt: string, sessionId: string): Promise<Message> {
-    const history = conversationRepository.getOrCreate(sessionId);
+  async sendMessage(prompt: string, userId: string) {
+    // 1. Save user message
 
-    conversationRepository.addMessage(history, prompt);
+    conversationRepository.addMessage(userId, {
+      role: "user",
+      content: prompt,
+    });
+
+    // 2. get updated history
+    const history = conversationRepository.getHistory(userId);
+    console.log("====================================");
+    console.log(history);
+    console.log("====================================");
     try {
+      // 3. send to ollama
       const response = await ollama.chat({
         model: "llama3.2",
         messages: history,
-        stream: false,
       });
+
       const assistantMessage = response.message;
-      conversationRepository.addMessage(history, assistantMessage.content);
+
+      // 4. save assistant response
+      conversationRepository.addMessage(userId, {
+        role: "assistant",
+        content: assistantMessage.content,
+      });
 
       return { message: assistantMessage.content, role: assistantMessage.role };
     } catch (error) {
