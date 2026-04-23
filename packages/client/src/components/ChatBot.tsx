@@ -3,7 +3,7 @@ import axios from "axios";
 import { Button } from "./ui/button";
 import { FaArrowUp } from "react-icons/fa";
 import { useForm } from "react-hook-form";
-import { useRef, useState, type KeyboardEvent } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 
 type FormData = {
   prompt: string;
@@ -17,6 +17,7 @@ type ChatResponse = {
 const ChatBot = () => {
   const [messages, setMessages] = useState<ChatResponse[]>([]);
   const [isBotTyping, setIsBotTyping] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
   const userId = useRef(crypto.randomUUID());
   const { register, handleSubmit, reset, formState } = useForm<FormData>();
 
@@ -41,6 +42,10 @@ const ChatBot = () => {
     }
   };
 
+  useEffect(() => {
+    formRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
   return (
     <div>
       <div className="flex flex-col gap-3 mb-8">
@@ -64,6 +69,7 @@ const ChatBot = () => {
       <form
         onSubmit={handleSubmit(onSubmit)}
         onKeyDown={onKeyDown}
+        ref={formRef}
         className="flex flex-col gap-2 items-end border-2 p-4 rounded-3xl"
       >
         <textarea
