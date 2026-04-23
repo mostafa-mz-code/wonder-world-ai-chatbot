@@ -16,11 +16,13 @@ type ChatResponse = {
 
 const ChatBot = () => {
   const [messages, setMessages] = useState<ChatResponse[]>([]);
+  const [isBotTyping, setIsBotTyping] = useState(false);
   const userId = useRef(crypto.randomUUID());
   const { register, handleSubmit, reset, formState } = useForm<FormData>();
 
   const onSubmit = async ({ prompt }: FormData) => {
     setMessages((prev) => [...prev, { message: prompt, role: "user" }]);
+    setIsBotTyping(true);
     reset();
 
     const { data } = await axios.post<ChatResponse>("/api/chat", {
@@ -28,6 +30,7 @@ const ChatBot = () => {
       userId: userId.current,
     });
 
+    setIsBotTyping(false);
     setMessages((prev) => [...prev, data]);
   };
 
@@ -49,6 +52,14 @@ const ChatBot = () => {
             <ReactMarkdown>{message}</ReactMarkdown>
           </div>
         ))}
+
+        {isBotTyping && (
+          <div className="flex  gap-1 bg-gray-200 p-3 rounded-full self-start">
+            <div className="size-2 rounded-full bg-black animate-pulse"></div>
+            <div className="size-2 rounded-full bg-black animate-pulse"></div>
+            <div className="size-2 rounded-full bg-black animate-pulse"></div>
+          </div>
+        )}
       </div>
       <form
         onSubmit={handleSubmit(onSubmit)}
