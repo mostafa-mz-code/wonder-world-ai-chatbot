@@ -25,7 +25,7 @@ export const chatController = {
 
       const assistantMessage = await chatService.sendMessage(prompt, userId);
 
-      return res.json({ message: assistantMessage });
+      return res.json(assistantMessage);
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: "Failed to fetch AI response" });
