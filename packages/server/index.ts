@@ -2,6 +2,7 @@ import express from "express";
 import type { Request, Response } from "express";
 import dotenv from "dotenv";
 import ollama from "ollama";
+import z from "zod";
 
 dotenv.config();
 const app = express();
@@ -18,7 +19,20 @@ app.get("/api/hello", (req: Request, res: Response) => {
 // Store history in a Map keyed by a unique session ID
 const chatHistories = new Map<string, { role: string; content: string }[]>();
 
+const chatSchema = z.object({
+  prompt: z
+    .string()
+    .trim()
+    .min(1, "Prompt is required")
+    .max(1000, "Prompt is too long"),
+  conversationId: z.string().uuid(),
+});
 app.post("/api/chat", async (req: Request, res: Response) => {
+  const parseResult = chatSchema.safeParse(req.body);
+  if (!parseResult.success) {
+    const cleanError = z.treeifyError(parseResult.error);
+    return res.status(400).json({ error: cleanError });
+  }
   try {
     const { prompt, sessionId = "default-user" } = req.body;
 
