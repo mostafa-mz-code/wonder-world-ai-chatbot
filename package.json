@@ -1,5 +1,5 @@
 {
-  "name": "my-bun-app",
+  "name": "WonderWorld-AI-chatbot",
   "module": "index.ts",
   "scripts": {
     "dev": "bun run index.ts",
