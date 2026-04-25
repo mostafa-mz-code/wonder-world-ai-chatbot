@@ -1,6 +1,15 @@
-import { conversationRepository } from "../repositories/conversation.repository";
+import fs from "fs";
 import ollama from "ollama";
+import path from "path";
+import template from "../prompts/chatbot.txt";
+import { conversationRepository } from "../repositories/conversation.repository";
 
+const parkInfo = fs.readFileSync(
+  path.join(__dirname, "..", "prompts", "WonderWorld.md"),
+  "utf-8"
+);
+
+const instructions = template.replace("{{parkInfo}}", parkInfo);
 export const chatService = {
   async sendMessage(prompt: string, userId: string) {
     // 1. Save user message
@@ -12,14 +21,18 @@ export const chatService = {
 
     // 2. get updated history
     const history = conversationRepository.getHistory(userId);
-    console.log("====================================");
-    console.log(history);
-    console.log("====================================");
+
     try {
       // 3. send to ollama
       const response = await ollama.chat({
         model: "llama3.2",
-        messages: history,
+        messages: [
+          {
+            role: "system",
+            content: instructions,
+          },
+          ...history,
+        ],
       });
 
       const assistantMessage = response.message;
